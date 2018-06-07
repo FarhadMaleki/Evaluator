@@ -1,4 +1,4 @@
-context("Test annotation package name")
+context("Test prep")
 source("../src/prep.R")
 
 test_that("Test prep.annotation.pkg.name", {

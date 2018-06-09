@@ -14,3 +14,40 @@ prep.annotation.pkg.name <- function(gene.annotation){
       gene.annotation <- paste(gene.annotation, ".db", sep = "")
   return(gene.annotation)
 }
+
+
+prep.genesets <- function(geneset.collection, annotation, background, min.size=1, max.size=Inf){
+  # This method converts gene ids to match annotation.
+  # It also filters gene sets based on their sizes.
+  #
+  # Args:
+  #   geneset.collection: a GSEABase::GeneSetCollection object
+  #   annotation: a string representing annotation name
+  #   background: the vector like object representing the id of all genes under study.
+  #   min.size: All gene sets with a size smaller than this number will be filtered.
+  #   max.size: All gene sets with a size larger than this number will be filtered.
+  #
+  # Returns:
+  #   genesets with gene ids according to annotation and
+  #     sizes between min.size and max.size (both inclusinve).
+  # Load required packages
+  require("GSEABase") || stop("Package GSEABase is not available!")
+  pkg.name <- prep.annotation.pkg.name(annotation)
+  require(pkg.name, character.only=TRUE) || stop("Package %s is not available!",
+                                                  pkg.name)
+
+  # Map identifies in geneset.collection to match gene annotation identifies
+  geneset.collection <- GSEABase::mapIdentifiers(geneset.collection,
+                                                 GSEABase::AnnotationIdentifier(annotation))
+  # Extract gene ids from each gene set in geneset.collection
+  genesets <- lapply(geneset.collection, GSEABase::geneIds)
+  names(genesets) <- names(geneset.collection)
+  # Extract identifiers that are present in background
+  genesets <- lapply(genesets, function(set) intersect(set, background))
+  # Filter gene sets based on their size
+  genesets <- Filter(function(x){
+                      return(length(x) >= min.size && length(x) <= max.size)
+                      },
+                      genesets)
+  return(genesets)
+}

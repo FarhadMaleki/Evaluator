@@ -73,3 +73,39 @@ prep.loadGMT <- function(collection.address){
   return(gsc)
 }
 
+
+prep.loadExpressionSet <- function(address, contrast, annotation, sep="\t"){
+  # Load an ExpressionSet containing gene expression measures.
+  # 
+  # Args:
+  #   address: Address of a file containing gene expression measures (profile).
+  #     The expression profile should containing sample names in the first row
+  #     and gene names in the first column. The rest of the columns must
+  #     represent expression measures for samples, and the rest of rows
+  #     represent expression measures across all samples for each gene. 
+  #   contrast: A vector-like representation of sample phenotypes.
+  #     The length of contrast must be equal to the number of samples
+  #     in the expression profile.
+  #   annotation: The gene annotation of expression profile. 
+  #   sep: Field separator for expression profile.
+  #
+  # Returns:
+  #   A ExpressionSet object.
+  #     See help(ExpressionSet) (from GSEABase package) for more information.
+  require("GSEABase") || stop("Package GSEABase is not available!")
+  if(!file.exists(address))
+    stop("The file containing expression profile does not exist:\n", address)
+  expression.matrix <- as.matrix(read.table(address,
+                                            header=TRUE,
+                                            sep=sep,
+                                            row.names=1,
+                                            as.is=TRUE))
+  # Create a data.frame for phenotypes
+  phenotype.data <- data.frame(type=contrast, row.names=colnames(expression.matrix))
+  # Create an ExpressionSet (See GSEABase package for more info)
+  eset <- ExpressionSet(assayData = expression.matrix,
+                        phenoData = new("AnnotatedDataFrame",  data = phenotype.data),
+                        annotation = annotation)
+  return(eset)
+}
+

@@ -179,3 +179,25 @@ test_that("Gene sets are loaded correctly.", {
                         "11073", "7465", "3178", "3925"))
   
 })
+
+test_that("Expression profile is loaded correctly.",{
+  address <- "../data/ArtificialExpressionData/ArtificialExpressionProfile.csv"
+  annotation <- "hu6800"
+  contrast <- c("c", "c", "c", "c", "c", "d", "d", "d", "d", "d")
+  eset <- prep.loadExpressionSet(address, contrast, annotation, sep=",")
+  expect_equal(dim(exprs(eset)), c(150, 10))
+  # Check the first row of expression profile
+  expected <- c(0.833733170755138, 0.258213780476749, 1.15123169923349,
+                1.28549945572469, 0.153504324579999, 3.67755590547646,
+                1.06210247077319, 2.05952695737273, 2.43278278242153,
+                1.47164238587154)
+  difference <- as.matrix(exprs(eset)["U30246_at", ] - expected)
+  expect_true(norm(difference) < 1E-7)
+  # Check the last row of expression profile
+  expected <- c(0.380864742480641, 2.20953097005084, 1.06034880325832,
+                0.67559253538877, 0.54429758077997, 0.056446768842962,
+                1.29547400508158, 0.478497082309476, 1.58601296107319,
+                0.63542425470372)
+  difference <- as.matrix(exprs(eset)["M31303_rna1_at", ] - expected)
+  expect_true(norm(difference) < 1E-7)
+  })

@@ -3,10 +3,10 @@ prep.annotation.pkg.name <- function(gene.annotation){
   # Append gene ".db" to the annotation package name, if required.
   #
   # Args:
-  #   gene.annotation: annotation package name with or without .db extenstion.
+  #   gene.annotation: annotation package name with or without .db extension.
   #
   # Returns:
-  #   An string representing annotation package name with .db extenstion
+  #   An string representing annotation package name with .db extension
   
   if(gene.annotation %in% c(NULL, NA, ""))
      stop("Annotation name is absent!")

@@ -51,3 +51,25 @@ prep.genesets <- function(geneset.collection, annotation, background, min.size=1
                       genesets)
   return(genesets)
 }
+
+
+prep.loadGMT <- function(collection.address){
+  # Load a gene set collection in GMT format
+  #
+  # Args:
+  #   collection.address: A file name or URL containing gene sets.
+  #     Gene set collection should be in GMT format.
+  #     See help(getGmt) (from GSEABase package) for more information.
+  #
+  # Returns:
+  #   A GSEABase::GeneSetCollection object. 
+  #     See help(GeneSetCollection) (from GSEABase pakage) for more information.
+  require("GSEABase") || stop("Package GSEABase is not available!")
+  if(!file.exists(collection.address))
+    stop("The following file address does not exist", collection.address)
+  gsc <- getGmt(collection.address,
+                geneIdType = EntrezIdentifier(),
+                collectionType = BroadCollection())
+  return(gsc)
+}
+

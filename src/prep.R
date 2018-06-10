@@ -62,8 +62,8 @@ prep.loadGMT <- function(collection.address){
   #     See help(getGmt) (from GSEABase package) for more information.
   #
   # Returns:
-  #   A GSEABase::GeneSetCollection object. 
-  #     See help(GeneSetCollection) (from GSEABase pakage) for more information.
+  #   A GeneSetCollection object. 
+  #     See help(GeneSetCollection) (from GSEABase package) for more information.
   require("GSEABase") || stop("Package GSEABase is not available!")
   if(!file.exists(collection.address))
     stop("The following file address does not exist", collection.address)

@@ -29,7 +29,7 @@ prep.genesets <- function(geneset.collection, annotation, background, min.size=1
   #
   # Returns:
   #   genesets with gene ids according to annotation and
-  #     sizes between min.size and max.size (both inclusinve).
+  #     sizes between min.size and max.size (both inclusive).
   # Load required packages
   require("GSEABase") || stop("Package GSEABase is not available!")
   pkg.name <- prep.annotation.pkg.name(annotation)

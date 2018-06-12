@@ -1,8 +1,7 @@
 # This module contains wrappers for gene set analysis methods.
 # A S3 class is used for implementing the wrappers.
 #
-run <- function(obj, multitest.adjustment="BH", num.permutation=1000,
-                sort.result=TRUE, ...){
+run <- function(obj, multitest.adjustment="BH", sort.result=TRUE, ...){
   # Generic method for dispatching run on wrapper objects
   # Args:
   #   obj: a GSVAWrapper object created by GSVAWrapper.

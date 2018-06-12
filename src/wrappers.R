@@ -153,3 +153,40 @@ run.PLAGEWrapper <- function(obj, multitest.adjustment="BH",
   return(result)
 }
 ###############################################################################
+##                              SSGSEAWrapper                                ##
+###############################################################################
+SSGSEAWrapper <- function(expression.set, genesets, contrast){
+  # Constructor for SSGSEAWrapper
+  #
+  # Args:
+  #   expression.set: An ExpressionSet object (see GSEABase package).
+  #   genesets: A list of gene sets.
+  #   contrast: A vector like representing case and control samples. Control 
+  #     samples should be represented by "c" and case sample should be
+  #     represented by "d".
+  # Return:
+  #   A SSGSEAWrapper object that is a list of expression.set, genesets, and
+  #     contrast.
+  obj <- assemble.obj(expression.set, genesets, contrast)
+  class(obj) <- "SSGSEAWrapper"
+  return(obj)
+}
+###############################################################################
+# define run method for SSGSEAWrapper
+run.SSGSEAWrapper <- function(obj, multitest.adjustment="BH",
+                              num.permutation=1000, sort.result=TRUE, ...){
+  # Run method for SSGSEAWrapper objects
+  # 
+  # Args:
+  #   obj: A SSGSEAWrapper object created by SSGSEAWrapper.
+  #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
+  #   num.permutation: An integer value representing number of permutations.
+  #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  # Returns:
+  #   A data.frame representing the result of gene set analysis using "ssgsea".
+  result <- gsva.caller(obj$expression.set, obj$genesets, obj$contrast,
+                        multitest.adjustment, num.permutation,
+                        sort.result, method.name="ssgsea", ...)
+  return(result)
+}
+###############################################################################

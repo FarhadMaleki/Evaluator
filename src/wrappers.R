@@ -115,3 +115,41 @@ run.GSVAWrapper <- function(obj, multitest.adjustment="BH",
   return(result)
 }
 ###############################################################################
+###############################################################################
+##                               PLAGEWrapper                                ##
+###############################################################################
+PLAGEWrapper <- function(expression.set, genesets, contrast){
+  # Constructor for PLAGEWrapper
+  #
+  # Args:
+  #   expression.set: An ExpressionSet object (see GSEABase package).
+  #   genesets: A list of gene sets.
+  #   contrast: A vector like representing case and control samples. Control 
+  #     samples should be represented by "c" and case sample should be
+  #     represented by "d".
+  # Return:
+  #   A PLAGEWrapper object that is a list of expression.set, genesets, and
+  #     contrast
+  obj <- assemble.obj(expression.set, genesets, contrast)
+  class(obj) <- "PLAGEWrapper"
+  return(obj)
+}
+###############################################################################
+# define run method for PLAGEWrapper
+run.PLAGEWrapper <- function(obj, multitest.adjustment="BH",
+                            num.permutation=1000, sort.result=TRUE, ...){
+  # Run method for PLAGEWrapper objects
+  # 
+  # Args:
+  #   obj: A PLAGEWrapper object created by PLAGEWrapper.
+  #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
+  #   num.permutation: An integer value representing number of permutations.
+  #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  # Returns:
+  #   A data.frame representing the result of gene set analysis using "plage".
+  result <- gsva.caller(obj$expression.set, obj$genesets, obj$contrast,
+                        multitest.adjustment, num.permutation,
+                        sort.result, method.name="plage", ...)
+  return(result)
+}
+###############################################################################

@@ -143,7 +143,6 @@ run.PLAGEWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   # Args:
   #   obj: A PLAGEWrapper object created by PLAGEWrapper.
   #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
-  #   num.permutation: An integer value representing number of permutations.
   #   sort.result: Logical, True to sort the result based on adjusted p-values.
   #   ...: see the documentation for gsva method from GSVA package.
   # Returns:

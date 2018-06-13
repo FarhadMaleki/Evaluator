@@ -57,16 +57,12 @@ test_that("PLAGEWrapper works as expected", {
 )
 
 test_that("SSGSEAWrapper works as expected", {
-  geneset.collection.address <- "../data/GenesetCollectionGS1-5/OriginalGS1-GS5.gmt"
-  profile.address <- "../data/ArtificialExpressionData/ArtificialExpressionProfile.csv"
-  geneset.collection <- prep.loadGMT(geneset.collection.address)
-  annotation <- "hu6800"
-  contrast <- c("c", "c", "c", "c", "c", "d", "d", "d", "d", "d")
-  expression.set <- prep.loadExpressionSet(profile.address, contrast,
-                                           annotation, sep=",")
-  background <- rownames(exprs(expression.set))
-  genesets <- prep.genesets(geneset.collection, annotation, background,
-                            min.size=1, max.size=Inf)
+  data <- load.dummy.dataset()
+  annotation <- data$annotation
+  contrast <- data$contrast
+  expression.set <- data$expression.set
+  background <- data$background
+  genesets <- data$genesets
   ssgsea.wrapper <- SSGSEAWrapper(expression.set, genesets, contrast)
   results <- run(ssgsea.wrapper, multitest.adjustment="BH", sort.result=TRUE)
   expect_equal(dim(results), c(5,5))

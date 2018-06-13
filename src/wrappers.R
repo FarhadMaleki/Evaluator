@@ -6,7 +6,6 @@ run <- function(obj, multitest.adjustment="BH", sort.result=TRUE, ...){
   # Args:
   #   obj: a GSVAWrapper object created by GSVAWrapper.
   #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
-  #   num.permutation: An integer value representing number of permutations.
   #   sort.result: Logical, True to sort the result based on adjusted p-values.
   UseMethod("run")
 }

@@ -266,7 +266,6 @@ run.ORAWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
                                               k=num.background.in.gs,
                                               lower.tail=FALSE)
   }
-  print(p.adjust(ora.results$p.value, method=multitest.adjustment))
   ora.results$p.adj <- p.adjust(ora.results$p.value,
                                 method=multitest.adjustment)
   if(sort.result)

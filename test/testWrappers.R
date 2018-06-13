@@ -14,8 +14,7 @@ test_that("GSVAWrapper works as expected", {
   genesets <- prep.genesets(geneset.collection, annotation, background,
                             min.size=1, max.size=Inf)
   gsva.wrapper <- GSVAWrapper(expression.set, genesets, contrast)
-  results <- run(gsva.wrapper, multitest.adjustment="BH", num.permutation=1000,
-                 sort.result=TRUE)
+  results <- run(gsva.wrapper, multitest.adjustment="BH", sort.result=TRUE)
   expect_equal(dim(results), c(5,5))
   expect_true(all(c("Geneset1", "Geneset4") %in% rownames(results)[c(1,2)]))
   expect_true(all(results[c(1,2), "p.adj"] < .05))
@@ -23,7 +22,6 @@ test_that("GSVAWrapper works as expected", {
   expect_true("p.adj" %in% colnames(results))
   expect_false("P.Value" %in% colnames(results))
   expect_false("adj.P.Val" %in% colnames(results))
-
 }
 )
 

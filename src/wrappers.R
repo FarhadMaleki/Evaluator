@@ -13,8 +13,8 @@ run <- function(obj, multitest.adjustment="BH", sort.result=TRUE, ...){
 
 
 gsva.caller <- function(expression.set, genesets, contrast,
-                        multitest.adjustment="BH", num.permutation,
-                        sort.result=TRUE, method.name="gsva", ...){
+                        multitest.adjustment="BH", sort.result=TRUE,
+                        method.name="gsva", ...){
   # A method for calling different methods from GSVA package
   #
   # Args:
@@ -24,10 +24,10 @@ gsva.caller <- function(expression.set, genesets, contrast,
   #     samples should be represented by "c" and case sample should be
   #     represented by "d".
   #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
-  #   num.permutation: An integer value representing number of permutations.
   #   sort.result: Logical, True to sort the result based on adjusted p-values.
   #   method.name: The name of the method from GSVA package. Available options
   #     are "gsva", "ssgsea", "zscore", "plage".
+  #   ...: see the documentation for gsva method from GSVA package.
   #
   # Returns:
   #     A data.frame representing the result of gene set analysis.
@@ -41,7 +41,8 @@ gsva.caller <- function(expression.set, genesets, contrast,
                          method=method.name,
                          parallel.sz=1, 
                          verbose=FALSE,
-                         kcdf="Gaussian")
+                         kcdf="Gaussian",
+                         ...)
   group <- factor(contrast)
   design.matrix <- model.matrix(~ group)
   gs.fit <- lmFit(geneset.scores, design=design.matrix)
@@ -98,19 +99,20 @@ GSVAWrapper <- function(expression.set, genesets, contrast){
 ###############################################################################
 # define run method for GSVAWrapper
 run.GSVAWrapper <- function(obj, multitest.adjustment="BH",
-                            num.permutation=1000, sort.result=TRUE, ...){
+                            sort.result=TRUE, ...){
   # Run method for GSVAWrapper objects
   # 
   # Args:
   #   obj: a GSVAWrapper object created by GSVAWrapper.
   #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
-  #   num.permutation: An integer value representing number of permutations.
   #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  #   ...: see the documentation for gsva method from GSVA package.
   # Returns:
   #   A data.frame representing the result of gene set analysis using "gsva".
+
   result <- gsva.caller(obj$expression.set, obj$genesets, obj$contrast,
-                        multitest.adjustment, num.permutation,
-                        sort.result, method.name="gsva", ...)
+                        multitest.adjustment, sort.result,
+                        method.name="gsva", ...)
   return(result)
 }
 ###############################################################################

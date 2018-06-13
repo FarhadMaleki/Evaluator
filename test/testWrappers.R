@@ -73,3 +73,21 @@ test_that("SSGSEAWrapper works as expected", {
 
 }
 )
+
+test_that("ORAWrapper works as expected", {
+  data <- load.dummy.dataset()
+  annotation <- data$annotation
+  contrast <- data$contrast
+  expression.set <- data$expression.set
+  background <- data$background
+  genesets <- data$genesets
+  ora.wrapper <- ORAWrapper(expression.set, genesets, contrast)
+  results <- run(ora.wrapper, multitest.adjustment="BH", sort.result=TRUE,
+                 p.value.cutoff=0.05, background=background,
+                 log.foldchange.cutoff=1)
+  expect_equal(dim(results), c(5,2))
+  expect_true("p.value" %in% colnames(results))
+  expect_true("p.adj" %in% colnames(results))
+  expect_true(all(results[, "p.adj"] > 0.8))
+}
+)

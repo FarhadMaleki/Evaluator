@@ -190,3 +190,87 @@ run.SSGSEAWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   return(result)
 }
 ###############################################################################
+##                                 ORAWrapper                                ##
+###############################################################################
+ORAWrapper <- function(expression.set, genesets, contrast){
+  # Constructor for ORAWrapper
+  #
+  # Args:
+  #   expression.set: An ExpressionSet object (see GSEABase package).
+  #   genesets: A list of gene sets.
+  #   contrast: A vector like representing case and control samples. Control 
+  #     samples should be represented by "c" and case sample should be
+  #     represented by "d".
+  # Return:
+  #   A ORAWrapper object that is a list of expression.set, genesets, and
+  #     contrast.
+  obj <- assemble.obj(expression.set, genesets, contrast)
+  class(obj) <- "ORAWrapper"
+  return(obj)
+}
+###############################################################################
+# define run method for ORAWrapper
+run.ORAWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
+                           ...){
+  # Run method for ORAWrapper objects
+  # 
+  # Args:
+  #   obj: A ORAWrapper object created by ORAWrapper.
+  #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
+  #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  #   background: A vector-like of all genes under study. The gene name/Id
+  #     must be compatible with the ids in obj$expression.set
+  # Returns:
+  #   A data.frame representing the result of gene set analysis using "ssgsea".
+  require("limma") || stop("Package limma is not available!")
+  param <- list(...)
+  # Set the p.value.cutoff 
+  if(is.null(param$p.value.cutoff)){
+      p.value.cutoff <- 0.05
+  }else{
+      p.value.cutoff <- param$p.value.cutoff
+  }
+  # Set the background, i.e. all genes under study
+  if(is.null(param$background)){
+    background <- featureNames(expression.set)
+  }else{
+    background <- param$background
+  }
+  # Set log.foldchange.cutoff
+  if(is.null(param$log.foldchange.cutoff)){
+      log.foldchange.cutoff <- 1
+  }else{
+      log.foldchange.cutoff <- param$log.foldchange.cutoff
+  }
+  # Run ORA
+  group <- factor(obj$contrast)
+  design.matrix <- model.matrix(~ group)
+  contrast <- unname(design.matrix[, "groupd"])
+  fit <- lmFit(exprs(obj$expression.set), design.matrix)
+  fit <- eBayes(fit)
+  diff.expressed.genes <- rownames(topTable(fit, coef=contrast, number=Inf,
+                                            p.value=p.value.cutoff,
+                                            lfc=log.foldchange.cutoff))
+  num.diff.expressed <- length(diff.expressed.genes)
+  n <- length(background) - num.diff.expressed
+  temp <- rep(NA, length(obj$genesets))
+  ora.results <- data.frame(p.value=temp, p.adj=temp)
+  rownames(ora.results) <- names(obj$genesets)
+  for(gs.name in names(obj$genesets)){
+    gs <- obj$genesets[[gs.name]]
+    num.diff.expressed.in.gs <- length(intersect(gs, diff.expressed.genes)) 
+    num.background.in.gs <- length(intersect(gs, background))        
+    ora.results[gs.name, "p.value"] <- phyper(q=num.diff.expressed.in.gs - 0.5,
+                                              m=num.diff.expressed,
+                                              n=n,
+                                              k=num.background.in.gs,
+                                              lower.tail=FALSE)
+  }
+  print(p.adjust(ora.results$p.value, method=multitest.adjustment))
+  ora.results$p.adj <- p.adjust(ora.results$p.value,
+                                method=multitest.adjustment)
+  if(sort.result)
+    ora.results[order(ora.results$p.adj), ]
+  return(ora.results)
+}
+###############################################################################

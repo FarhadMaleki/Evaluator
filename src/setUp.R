@@ -49,3 +49,8 @@ if(!require("safe")){
 	biocLite("safe")
 	load("safe")
 }
+
+if(!require("GSEABase")){
+	biocLite("GSEABase")
+	load("GSEABase")
+}

@@ -61,8 +61,7 @@ test_that("SSGSEAWrapper works as expected", {
   genesets <- prep.genesets(geneset.collection, annotation, background,
                             min.size=1, max.size=Inf)
   ssgsea.wrapper <- SSGSEAWrapper(expression.set, genesets, contrast)
-  results <- run(ssgsea.wrapper, multitest.adjustment="BH",
-                 num.permutation=1000, sort.result=TRUE)
+  results <- run(ssgsea.wrapper, multitest.adjustment="BH", sort.result=TRUE)
   expect_equal(dim(results), c(5,5))
   expect_true("p.value" %in% colnames(results))
   expect_true("p.adj" %in% colnames(results))

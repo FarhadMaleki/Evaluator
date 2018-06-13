@@ -173,20 +173,20 @@ SSGSEAWrapper <- function(expression.set, genesets, contrast){
 }
 ###############################################################################
 # define run method for SSGSEAWrapper
-run.SSGSEAWrapper <- function(obj, multitest.adjustment="BH",
-                              num.permutation=1000, sort.result=TRUE, ...){
+run.SSGSEAWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
+                              ...){
   # Run method for SSGSEAWrapper objects
   # 
   # Args:
   #   obj: A SSGSEAWrapper object created by SSGSEAWrapper.
   #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
-  #   num.permutation: An integer value representing number of permutations.
   #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  #   ...: see the documentation for gsva method from GSVA package.
   # Returns:
   #   A data.frame representing the result of gene set analysis using "ssgsea".
   result <- gsva.caller(obj$expression.set, obj$genesets, obj$contrast,
-                        multitest.adjustment, num.permutation,
-                        sort.result, method.name="ssgsea", ...)
+                        multitest.adjustment, sort.result, method.name="ssgsea",
+                        ...)
   return(result)
 }
 ###############################################################################

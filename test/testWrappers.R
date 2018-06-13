@@ -37,8 +37,7 @@ test_that("PLAGEWrapper works as expected", {
   genesets <- prep.genesets(geneset.collection, annotation, background,
                             min.size=1, max.size=Inf)
   plage.wrapper <- PLAGEWrapper(expression.set, genesets, contrast)
-  results <- run(plage.wrapper, multitest.adjustment="BH",
-                 num.permutation=1000, sort.result=TRUE)
+  results <- run(plage.wrapper, multitest.adjustment="BH", sort.result=TRUE)
   expect_equal(dim(results), c(5,5))
   expect_true(all(c("Geneset1", "Geneset4") %in% rownames(results)[c(1,2)]))
   expect_true(all(results[c(1,2), "p.adj"] < .05))

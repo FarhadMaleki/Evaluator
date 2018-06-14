@@ -1,6 +1,7 @@
 context("Test prep")
 source("../src/wrappers.R")
 source("../src/prep.R")
+source("../src/GSEA.1.0.R")
 load.dummy.dataset <-function(){
   # Load data set dummy dataset
   data <- list()
@@ -89,5 +90,28 @@ test_that("ORAWrapper works as expected", {
   expect_true("p.value" %in% colnames(results))
   expect_true("p.adj" %in% colnames(results))
   expect_true(all(results[, "p.adj"] > 0.8))
+}
+)
+
+test_that("GSEAWrapper works as expected", {
+  data <- load.dummy.dataset()
+  annotation <- data$annotation
+  contrast <- data$contrast
+  expression.set <- data$expression.set
+  background <- data$background
+  genesets <- data$genesets
+  gsea.wrapper <- GSEAWrapper(expression.set, genesets, contrast)
+  results <- run(gsea.wrapper, multitest.adjustment="BH", sort.result=TRUE,
+                 num.permutation=1000, reshuffling.type="sample.labels")
+  expect_true(results["Geneset1", "p.adj"] < results["Geneset2", "p.adj"])
+  expect_true(results["Geneset1", "p.adj"] < results["Geneset3", "p.adj"])
+  expect_true(results["Geneset1", "p.adj"] < results["Geneset5", "p.adj"])
+  expect_true(results["Geneset4", "p.adj"] < results["Geneset2", "p.adj"])
+  expect_true(results["Geneset4", "p.adj"] < results["Geneset3", "p.adj"])
+  expect_true(results["Geneset4", "p.adj"] < results["Geneset5", "p.adj"])
+  results <- run(gsea.wrapper, multitest.adjustment="BH", sort.result=TRUE,
+                 num.permutation=1000, reshuffling.type="gene.labels")
+  expect_true(results["Geneset1", "p.adj"] < 0.05)
+  expect_true(results["Geneset4", "p.adj"] < 0.05)
 }
 )

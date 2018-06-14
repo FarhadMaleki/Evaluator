@@ -273,3 +273,89 @@ run.ORAWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   return(ora.results)
 }
 ###############################################################################
+##                                GSEAWrapper                                ##
+###############################################################################
+GSEAWrapper <- function(expression.set, genesets, contrast){
+  # Constructor for GSEAWrapper
+  #
+  # Args:
+  #   expression.set: An ExpressionSet object (see GSEABase package).
+  #   genesets: A list of gene sets.
+  #   contrast: A vector like representing case and control samples. Control 
+  #     samples should be represented by "c" and case sample should be
+  #     represented by "d".
+  # Return:
+  #   A GSEAWrapper object that is a list of expression.set, genesets, and
+  #     contrast.
+  obj <- assemble.obj(expression.set, genesets, contrast)
+  class(obj) <- "GSEAWrapper"
+  return(obj)
+}
+###############################################################################
+# TODO: Due to copyright issue the GSEAWrapper should be removed before
+#   publishing the project
+# define run method for GSEAWrapper
+run.GSEAWrapper <- function(obj, multitest.adjustment=NULL,
+                            sort.result=TRUE, reshuffling.type="sample.labels",
+                            num.permutation=1000, ...){
+  # Run method for GSEAWrapper objects
+  # 
+  # Args:
+  #   obj: A GSEAWrapper object created by GSEAWrapper.
+  #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
+  #     The default value is Internal which report the adjusted p-value
+  #     reported by original implementation of GSEA. 
+  #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  #   num.permutation: An integer number for the number of permutations.
+  #   reshuffling.type: Permutation method for significance assessment. Either
+  #     "sample.labels" or "gene.labels"
+  # Returns:
+  #   A data.frame representing the result of gene set analysis using GSEA.
+
+  # Convert contrast to a binary vector
+  contrast <- as.numeric(factor(obj$contrast))-1
+  input.cls <- list(phen=c("Treatment1", "Treatment2"), class.v=contrast)
+  # Calling GSEA method adopted from the source code by authors of GSEA. Source
+  #   code were adopted from the script on the following web address:
+  #   http://software.broadinstitute.org/gsea/index.jsp
+  results <- GSEA(input.ds=data.frame(exprs(obj$expression.set)), 
+                  input.cls=input.cls,
+                  gs.db=obj$genesets,
+                  output.directory="",
+                  doc.string="",
+                  non.interactive.run=TRUE,
+                  reshuffling.type=reshuffling.type,
+                  nperm=num.permutation,
+                  weighted.score.type=1,
+                  nom.p.val.threshold=-1,
+                  fwer.p.val.threshold=-1,
+                  fdr.q.val.threshold=0.05,
+                  topgs=10,
+                  adjust.FDR.q.val=FALSE,
+                  gs.size.threshold.min=1,
+                  gs.size.threshold.max=Inf,
+                  reverse.sign=FALSE,
+                  preproc.type=0,
+                  random.seed=123456,
+                  perm.type=0,
+                  fraction=1.0,
+                  replace=FALSE,
+                  save.intermediate.results=FALSE,
+                  OLD.GSEA=FALSE,
+                  use.fast.enrichment.routine=TRUE)
+  results <- rbind(results$report1, results$report2)
+  rownames(results) <- results$GS
+  colnames(results)[which(colnames(results) == "NOM p-val")] <- "p.value"
+  if(!is.null(multitest.adjustment)){
+    idx <- as.numeric(results[, "p.value"])
+    p.values <- as.numeric(levels(results[, "p.value"]))[idx]
+    adjusted <- p.adjust(p.values, method=multitest.adjustment)
+    results[, "p.adj"] <- adjusted
+  }else{
+    colnames(results)[which(colnames(results) == "FDR q-val")] <- "p.adj"
+  }
+  if(sort.result)
+    results[order(results$p.adj), ]
+  return(results)
+}
+###############################################################################

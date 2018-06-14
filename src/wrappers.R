@@ -52,7 +52,7 @@ gsva.caller <- function(expression.set, genesets, contrast,
   colnames(gsva.results)[which(colnames(gsva.results) == "P.Value")] <- "p.value"
   colnames(gsva.results)[which(colnames(gsva.results) == "adj.P.Val")] <- "p.adj"
   if(multitest.adjustment != "BH")
-    gsva.results[, "p.adj"] <- p.adjust(gsva.results[, "p.adj"],
+    gsva.results[, "p.adj"] <- p.adjust(gsva.results[, "p.value"],
                                         method=multitest.adjustment)
   if(sort.result)
     gsva.results[order(gsva.results$p.adj), ]

@@ -221,7 +221,7 @@ run.ORAWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   #   background: A vector-like of all genes under study. The gene name/Id
   #     must be compatible with the ids in obj$expression.set
   # Returns:
-  #   A data.frame representing the result of gene set analysis using "ssgsea".
+  #   A data.frame representing the result of gene set analysis.
   require("limma") || stop("Package limma is not available!")
   param <- list(...)
   # Set the p.value.cutoff 

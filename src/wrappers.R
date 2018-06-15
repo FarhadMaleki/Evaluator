@@ -670,3 +670,47 @@ run.GSAWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   return(gsa.results)
 }
 ###############################################################################
+##                              PADOGWrapper                                ##
+###############################################################################
+PADOGWrapper <- function(expression.set, genesets, contrast){
+  # Constructor for PADOGWrapper
+  #
+  # Args:
+  #   expression.set: An ExpressionSet object (see GSEABase package).
+  #   genesets: A list of gene sets.
+  #   contrast: A vector like representing case and control samples. Control 
+  #     samples should be represented by "c" and case sample should be
+  #     represented by "d".
+  # Return:
+  #   A PADOGWrapper object that is a list of expression.set, genesets, and
+  #     contrast.
+  obj <- assemble.obj(expression.set, genesets, contrast)
+  class(obj) <- "PADOGWrapper"
+  return(obj)
+}
+###############################################################################
+# define run method for PADOGWrapper
+run.PADOGWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
+                             ...){
+  # Run method for PADOGWrapper objects
+  # 
+  # Args:
+  #   obj: A PADOGWrapper object created by PADOGWrapper.
+  #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
+  #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  #   ...: see the documentation for padog method from PADOG package.
+  # Returns:
+  #   A data.frame representing the result of gene set analysis.
+  require("PADOG") || stop("Package PADOG is not available!")
+  # Run padog
+  padog.results = padog(esetm=exprs(obj$expression.set),
+                        group=obj$contrast, ...)
+  idx <- which(colnames(padog.results) == "Ppadog")
+  colnames(padog.results)[idx] <- "p.value"
+  padog.results$p.adj <- p.adjust(padog.results$p.value,
+                                  method = multitest.adjustment)
+  if(sort.result)
+    padog.results[order(padog.results$p.adj), ]
+  return(padog.results)
+}
+###############################################################################

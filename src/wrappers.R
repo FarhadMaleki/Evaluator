@@ -516,3 +516,49 @@ run.FRYWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   return(fry.results)
 }
 ###############################################################################
+##                              GlobalTestWrapper                                ##
+###############################################################################
+GlobalTestWrapper <- function(expression.set, genesets, contrast){
+  # Constructor for GlobalTestWrapper
+  #
+  # Args:
+  #   expression.set: An ExpressionSet object (see GSEABase package).
+  #   genesets: A list of gene sets.
+  #   contrast: A vector like representing case and control samples. Control 
+  #     samples should be represented by "c" and case sample should be
+  #     represented by "d".
+  # Return:
+  #   A GlobalTestWrapper object that is a list of expression.set, genesets, and
+  #     contrast.
+  obj <- assemble.obj(expression.set, genesets, contrast)
+  class(obj) <- "GlobalTestWrapper"
+  return(obj)
+}
+###############################################################################
+# define run method for GlobalTestWrapper
+run.GlobalTestWrapper <- function(obj, multitest.adjustment="BH",
+                                  num.permutation=1000, sort.result=TRUE, ...){
+  # Run method for GlobalTestWrapper objects
+  # 
+  # Args:
+  #   obj: A GlobalTestWrapper object created by GlobalTestWrapper.
+  #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
+  #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  #   ...: see the documentation for gt method from globaltest package.
+  # Returns:
+  #   A data.frame representing the result of gene set analysis.
+  require("globaltest") || stop("Package globaltest is not available!")
+  # Run global test
+  contrast <- as.numeric(factor(obj$contrast)) - 1
+  gt.object <- gt(contrast, obj$expression.set, subsets=obj$genesets,
+                 permutations=num.permutation, ...)
+  gt.result <- as.data.frame(result(gt.object))
+  gt.result$p.adj <- p.adjust( gt.result[, 1], method = multitest.adjustment)
+  # Sort the result based on p-value
+  idx <- which(colnames(gt.result) == "p-value")
+  colnames(gt.result)[idx] <- "p.value"
+  if (sort.result) 
+    gt.result <- gt.result[order(gt.result$p.adj),]
+  return(gt.result)
+}
+###############################################################################

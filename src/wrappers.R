@@ -442,16 +442,17 @@ run.ROASTWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   #   obj: A ROASTWrapper object created by ROASTWrapper.
   #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
   #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  #   num.permutation: An integer number for the number of permutations.
   #   ...: see the documentation for roast method from limma package.
   # Returns:
   #   A data.frame representing the result of gene set analysis.
   require("limma") || stop("Package limma is not available!")
   # Run roast
   group <- factor(obj$contrast)
-  design.matrix <- model.matrix(~0+ group)
+  design.matrix <- model.matrix(~group)
   colnames(design.matrix) <- levels(group)
   design.matrix.col <- 2
-  roast.results <- mroast(y = exprs(obj$expression.set),
+  roast.results <- mroast(y=exprs(obj$expression.set),
                           index=obj$genesets,
                           design=design.matrix,
                           contrast=design.matrix.col,

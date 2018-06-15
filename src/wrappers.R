@@ -414,3 +414,55 @@ run.CAMERAWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   return(camera.results)
 }
 ###############################################################################
+##                              ROASTWrapper                                ##
+###############################################################################
+ROASTWrapper <- function(expression.set, genesets, contrast){
+  # Constructor for ROASTWrapper
+  #
+  # Args:
+  #   expression.set: An ExpressionSet object (see GSEABase package).
+  #   genesets: A list of gene sets.
+  #   contrast: A vector like representing case and control samples. Control 
+  #     samples should be represented by "c" and case sample should be
+  #     represented by "d".
+  # Return:
+  #   A ROASTWrapper object that is a list of expression.set, genesets, and
+  #     contrast.
+  obj <- assemble.obj(expression.set, genesets, contrast)
+  class(obj) <- "ROASTWrapper"
+  return(obj)
+}
+###############################################################################
+# define run method for ROASTWrapper
+run.ROASTWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
+                             num.permutation=1000, ...){
+  # Run method for ROASTWrapper objects
+  # 
+  # Args:
+  #   obj: A ROASTWrapper object created by ROASTWrapper.
+  #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
+  #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  #   ...: see the documentation for roast method from limma package.
+  # Returns:
+  #   A data.frame representing the result of gene set analysis.
+  require("limma") || stop("Package limma is not available!")
+  # Run roast
+  group <- factor(obj$contrast)
+  design.matrix <- model.matrix(~0+ group)
+  colnames(design.matrix) <- levels(group)
+  design.matrix.col <- 2
+  roast.results <- mroast(y = exprs(obj$expression.set),
+                          index=obj$genesets,
+                          design=design.matrix,
+                          contrast=design.matrix.col,
+                          nrot=num.permutation)
+  idx <- which(colnames(roast.results) == "PValue")
+  colnames(roast.results)[idx] <- "p.value"
+  roast.results$FDR <- NULL
+  roast.results$p.adj <- p.adjust(roast.results$p.value,
+                                   method=multitest.adjustment)
+  if(sort.result)
+    roast.results <- roast.results[order(roast.results[,"p.adj"]),]
+  return(roast.results)
+}
+###############################################################################

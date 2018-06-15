@@ -612,3 +612,61 @@ run.GAGEWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   return(gage.results)
 }
 ###############################################################################
+##                              GSAWrapper                                ##
+###############################################################################
+GSAWrapper <- function(expression.set, genesets, contrast){
+  # Constructor for GSAWrapper
+  #
+  # Args:
+  #   expression.set: An ExpressionSet object (see GSEABase package).
+  #   genesets: A list of gene sets.
+  #   contrast: A vector like representing case and control samples. Control 
+  #     samples should be represented by "c" and case sample should be
+  #     represented by "d".
+  # Return:
+  #   A GSAWrapper object that is a list of expression.set, genesets, and
+  #     contrast.
+  obj <- assemble.obj(expression.set, genesets, contrast)
+  class(obj) <- "GSAWrapper"
+  return(obj)
+}
+###############################################################################
+# define run method for GSAWrapper
+run.GSAWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
+                           ...){
+  # Run method for GSAWrapper objects
+  # 
+  # Args:
+  #   obj: A GSAWrapper object created by GSAWrapper.
+  #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
+  #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  #   ...: see the documentation for GSA method from GSA package.
+  # Returns:
+  #   A data.frame representing the result of gene set analysis.
+  require("GSA") || stop("Package GSA is not available!")
+  # Run GSA
+  contrast = as.numeric(factor(obj$contrast))
+  gsa.results <- GSA::GSA(exprs(obj$expression.set),
+                          contrast,
+                          obj$genesets,
+                          featureNames(obj$expression.set), ...)
+                        
+  gsa.results <- GSA.listsets(gsa.results,
+                              geneset.names=names(obj$genesets),
+                              FDRcut=.5)
+  temp <- rbind(gsa.results$negative, gsa.results$positive)
+  gsa.results <- temp[, c(3, 4, 5)]
+  gsa.results <- cbind(as.numeric(gsa.results[, "Score"]),
+                       as.numeric(gsa.results[, "p-value"]),
+                       as.numeric(gsa.results[, "FDR"]))
+  rownames(gsa.results) <- temp[, 2]
+  colnames(gsa.results) <- c("Score", "p.value", "p.adj")
+  gsa.results <- as.data.frame(gsa.results)
+  gsa.results$p.adj <- NULL
+  gsa.results$p.adj <- p.adjust(gsa.results$p.value,
+                              method=multitest.adjustment)
+  if(sort.result)
+    gsa.results[order(gsa.results$p.adj), ]
+  return(gsa.results)
+}
+###############################################################################

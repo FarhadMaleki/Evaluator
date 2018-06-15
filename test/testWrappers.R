@@ -89,7 +89,11 @@ test_that("ORAWrapper works as expected", {
   expect_equal(dim(results), c(5,2))
   expect_true("p.value" %in% colnames(results))
   expect_true("p.adj" %in% colnames(results))
-  expect_true(all(results[, "p.adj"] > 0.8))
+  expect_true(all(results["Geneset1", "p.adj"] < 0.05))
+  expect_true(all(results["Geneset4", "p.adj"] < 0.05))
+  expect_true(all(results["Geneset2", "p.adj"] > 0.05))
+  expect_true(all(results["Geneset3", "p.adj"] > 0.05))
+  expect_true(all(results["Geneset5", "p.adj"] > 0.05))
 }
 )
 

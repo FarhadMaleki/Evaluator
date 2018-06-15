@@ -244,11 +244,14 @@ run.ORAWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   }
   # Run ORA
   group <- factor(obj$contrast)
-  design.matrix <- model.matrix(~ group)
-  contrast <- unname(design.matrix[, "groupd"])
+  design.matrix <- model.matrix(~0 + group)
+
+  colnames(design.matrix) <- levels(group)
+  contrast <- makeContrasts(d - c, levels=design.matrix)
   fit <- lmFit(exprs(obj$expression.set), design.matrix)
+  fit <- contrasts.fit(fit, contrast)
   fit <- eBayes(fit)
-  diff.expressed.genes <- rownames(topTable(fit, coef=contrast, number=Inf,
+  diff.expressed.genes <- rownames(topTable(fit, coef=1, number=Inf,
                                             p.value=p.value.cutoff,
                                             lfc=log.foldchange.cutoff))
   num.diff.expressed <- length(diff.expressed.genes)

@@ -201,3 +201,25 @@ test_that("Expression profile is loaded correctly.",{
   difference <- as.matrix(exprs(eset)["M31303_rna1_at", ] - expected)
   expect_true(norm(difference) < 1E-7)
   })
+
+test_that("prep.makeFGeneSetCollection works as expected.", {
+  genesets <- list()
+  genesets[["Geneset1"]] <- c("U30246_at", "U33267_at", "X15376_at",
+                            "Z30643_at", "X14766_at", "X52009_s_at",
+                            "X52008_at", "L02785_at", "L13258_at",
+                            "X91220_at")
+  genesets[["Geneset2"]] <- c("U62317_rna3_at", "M12625_at",
+                            "L25931_s_at", "X66922_at", "X69141_at",
+                            "Z47055_s_at", "J02758_s_at",
+                            "X17025_at", "D10704_at","X83618_at",
+                            "D16154_at", "M32879_at", "M37238_s_at",
+                            "D10202_at", "L25798_at", "D87436_at",
+                            "M37400_at", "X64330_at", "M94856_at",
+                            "D17793_at", "U60205_at")
+  collection <- prep.makeFGeneSetCollection(genesets)
+  expect_identical(names(collection), c("Geneset1", "Geneset2"))
+  expect_identical(geneIds(collection[["Geneset1"]]),
+                   genesets[["Geneset1"]])
+  expect_identical(geneIds(collection[["Geneset2"]]),
+                   genesets[["Geneset2"]])
+  })

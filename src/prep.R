@@ -109,3 +109,21 @@ prep.loadExpressionSet <- function(address, contrast, annotation, sep="\t"){
   return(eset)
 }
 
+
+prep.makeFGeneSetCollection <- function(genesets){
+  # Convert a list of gene sets to a GeneSetCollection
+  #
+  # Args:
+  # genesets: a list of vector-likes. names(genesets) will be
+  #   translated to setNames for GeneSet objects. Each element
+  #   of the list is a vector-like containing gene ids.
+  # Returns:
+  #   A GeneSetCollection, see GSEABase package for more information.
+  gsc <- list()
+  for(i in 1:length(genesets)){
+    gs <- GeneSet(setName=names(genesets)[i],geneIds=genesets[[i]],
+                  geneIdType=AnnotationIdentifier())
+    gsc[[names(genesets)[i]]] <- gs
+  }
+  return(GeneSetCollection(gsc))
+}

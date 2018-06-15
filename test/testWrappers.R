@@ -106,7 +106,7 @@ test_that("GSEAWrapper works as expected", {
   genesets <- data$genesets
   gsea.wrapper <- GSEAWrapper(expression.set, genesets, contrast)
   results <- run(gsea.wrapper, multitest.adjustment="BH", sort.result=TRUE,
-                 num.permutation=1000, reshuffling.type="sample.labels")
+                 num.permutation=200, reshuffling.type="sample.labels")
   expect_true(results["Geneset1", "p.adj"] < results["Geneset2", "p.adj"])
   expect_true(results["Geneset1", "p.adj"] < results["Geneset3", "p.adj"])
   expect_true(results["Geneset1", "p.adj"] < results["Geneset5", "p.adj"])
@@ -114,7 +114,7 @@ test_that("GSEAWrapper works as expected", {
   expect_true(results["Geneset4", "p.adj"] < results["Geneset3", "p.adj"])
   expect_true(results["Geneset4", "p.adj"] < results["Geneset5", "p.adj"])
   results <- run(gsea.wrapper, multitest.adjustment="BH", sort.result=TRUE,
-                 num.permutation=1000, reshuffling.type="gene.labels")
+                 num.permutation=100, reshuffling.type="gene.labels")
   expect_true(results["Geneset1", "p.adj"] < 0.05)
   expect_true(results["Geneset4", "p.adj"] < 0.05)
 }

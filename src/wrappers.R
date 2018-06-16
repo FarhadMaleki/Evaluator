@@ -764,3 +764,56 @@ run.PAGEWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   return(page.results)
 }
 ###############################################################################
+##                                SAFEWrapper                                ##
+###############################################################################
+SAFEWrapper <- function(expression.set, genesets, contrast){
+  # Constructor for SAFEWrapper
+  #
+  # Args:
+  #   expression.set: An ExpressionSet object (see GSEABase package).
+  #   genesets: A list of gene sets.
+  #   contrast: A vector like representing case and control samples. Control 
+  #     samples should be represented by "c" and case sample should be
+  #     represented by "d".
+  # Return:
+  #   A SAFEWrapper object that is a list of expression.set, genesets, and
+  #     contrast.
+  obj <- assemble.obj(expression.set, genesets, contrast)
+  class(obj) <- "SAFEWrapper"
+  return(obj)
+}
+###############################################################################
+# define run method for SAFEWrapper
+run.SAFEWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
+                            ...){
+  # Run method for SAFEWrapper objects
+  # 
+  # Args:
+  #   obj: A SAFEWrapper object created by SAFEWrapper.
+  #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
+  #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  #   ...: see the documentation for safe method from safe package.
+  # Returns:
+  #   A data.frame representing the result of gene set analysis.
+  require("safe") || stop("Package safe is not available!")
+  # Run safe
+  geneset.matrix <- getCmatrix(keyword.list=obj$genesets,
+                               present.genes=featureNames(obj$expression.set),
+                               min.size=1)
+  contrast <- as.numeric(factor(obj$contrast)) - 1
+  safe.results <- safe(X.mat=exprs(obj$expression.set), 
+                       y.vec=contrast, C.mat=geneset.matrix, ...)
+  safe.results <- safe.toptable(safe.results, 
+                               number=length(obj$genesets),
+                               description=FALSE)
+  safe.results[, "p.value"] <- as.numeric(safe.results[, "P.value"])
+  rownames(safe.results) <- safe.results[, "GenesetID"]
+  
+  # safe.results$Adj.p.value = NULL
+  safe.results$p.adj <- p.adjust(safe.results$p.value,
+                                method = multitest.adjustment)
+  if(sort.result)
+    safe.results[order(safe.results$p.adj), ]
+  return(safe.results)
+}
+###############################################################################

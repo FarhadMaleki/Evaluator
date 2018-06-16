@@ -714,3 +714,53 @@ run.PADOGWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   return(padog.results)
 }
 ###############################################################################
+##                                PAGEWrapper                                ##
+###############################################################################
+PAGEWrapper <- function(expression.set, genesets, contrast){
+  # Constructor for PAGEWrapper
+  #
+  # Args:
+  #   expression.set: An ExpressionSet object (see GSEABase package).
+  #   genesets: A list of gene sets.
+  #   contrast: A vector like representing case and control samples. Control 
+  #     samples should be represented by "c" and case sample should be
+  #     represented by "d".
+  # Return:
+  #   A PAGEWrapper object that is a list of expression.set, genesets, and
+  #     contrast.
+  obj <- assemble.obj(expression.set, genesets, contrast)
+  class(obj) <- "PAGEWrapper"
+  return(obj)
+}
+###############################################################################
+# define run method for PAGEWrapper
+run.PAGEWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
+                            ...){
+  # Run method for PAGEWrapper objects
+  # 
+  # Args:
+  #   obj: A PAGEWrapper object created by PAGEWrapper.
+  #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
+  #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  #   ...: see the documentation for gage method from gage package.
+  # Returns:
+  #   A data.frame representing the result of gene set analysis.
+  require("gage") || stop("Package gage is not available!")
+  # Run page
+  controls <- which(obj$contrast %in% c("c"))
+  cases <- which(obj$contrast %in% c("d"))
+  page.results <- gage(exprs=exprs(obj$expression.set), 
+                       gsets=obj$genesets, 
+                       ref=controls,
+                       samp=cases, ...)$greater[, 1:5]
+  page.results <- as.data.frame(page.results)
+  idx <- which(colnames(page.results) == "p.val")
+  colnames(page.results)[idx] <- "p.value"
+  page.results$q.val <- NULL
+  page.results$p.adj <- p.adjust(page.results$p.value,
+                                 method=multitest.adjustment)
+  if(sort.result)
+    page.results[order(page.results$p.adj), ]
+  return(page.results)
+}
+###############################################################################

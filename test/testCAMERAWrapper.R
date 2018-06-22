@@ -12,7 +12,6 @@ test_that("CAMERAWrapper works as expected", {
   camera.wrapper <- CAMERAWrapper(expression.set, genesets, contrast)
   results <- run(camera.wrapper, multitest.adjustment="BH",
                  sort.result=TRUE, inter.gene.cor=NA)
-  print(results)
   expect_equal(dim(results), c(5,5))
   expect_true("p.value" %in% colnames(results))
   expect_true("p.adj" %in% colnames(results))

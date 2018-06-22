@@ -398,7 +398,7 @@ run.CAMERAWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
                            index = obj$genesets,
                            design = design.matrix,
                            contrast = design.matrix.col,
-                           inter.gene.cor=NA)
+                           ...)
   idx <- which(colnames(camera.results) == "PValue")
   colnames(camera.results)[idx] <- "p.value"
   camera.results$FDR <- NULL

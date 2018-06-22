@@ -1,5 +1,0 @@
-context("Test prep")
-source("../src/wrappers.R")
-source("../src/prep.R")
-source("../src/GSEA.1.0.R")
-source("loadDummyDatasets.R")

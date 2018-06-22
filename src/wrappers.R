@@ -298,10 +298,9 @@ GSEAWrapper <- function(expression.set, genesets, contrast){
 # TODO: Due to copyright issue the GSEAWrapper should be removed before
 #   publishing the project
 # define run method for GSEAWrapper
-run.GSEAWrapper <- function(obj, multitest.adjustment=NULL,
-                            sort.result=TRUE, reshuffling.type="sample.labels",
-                            num.permutation=1000, ...){
-  # Run method for GSEAWrapper objects
+run.GSEAWrapper <- function(obj, multitest.adjustment="BH",
+                            sort.result=TRUE, ...){
+# Run method for GSEAWrapper objects
   # 
   # Args:
   #   obj: A GSEAWrapper object created by GSEAWrapper.
@@ -309,15 +308,15 @@ run.GSEAWrapper <- function(obj, multitest.adjustment=NULL,
   #     The default value is Internal which report the adjusted p-value
   #     reported by original implementation of GSEA. 
   #   sort.result: Logical, True to sort the result based on adjusted p-values.
-  #   num.permutation: An integer number for the number of permutations.
   #   reshuffling.type: Permutation method for significance assessment. Either
   #     "sample.labels" or "gene.labels"
+  #   ...: See the parameters of GSEA function from GSEA.1.0.R script.
   # Returns:
   #   A data.frame representing the result of gene set analysis using GSEA.
 
   # Convert contrast to a binary vector
   contrast <- as.numeric(factor(obj$contrast))-1
-  input.cls <- list(phen=c("Treatment1", "Treatment2"), class.v=contrast)
+  input.cls <- list(phen=c("c", "d"), class.v=contrast)
   # Calling GSEA method adopted from the source code by authors of GSEA. Source
   #   code were adopted from the script on the following web address:
   #   http://software.broadinstitute.org/gsea/index.jsp
@@ -326,26 +325,22 @@ run.GSEAWrapper <- function(obj, multitest.adjustment=NULL,
                   gs.db=obj$genesets,
                   output.directory="",
                   doc.string="",
-                  non.interactive.run=TRUE,
-                  reshuffling.type=reshuffling.type,
-                  nperm=num.permutation,
+                  non.interactive.run=FALSE,
                   weighted.score.type=1,
                   nom.p.val.threshold=-1,
                   fwer.p.val.threshold=-1,
-                  fdr.q.val.threshold=0.05,
-                  topgs=10,
+                  fdr.q.val.threshold=0.5,
+                  topgs=1,
                   adjust.FDR.q.val=FALSE,
-                  gs.size.threshold.min=1,
-                  gs.size.threshold.max=Inf,
                   reverse.sign=FALSE,
                   preproc.type=0,
-                  random.seed=123456,
                   perm.type=0,
                   fraction=1.0,
                   replace=FALSE,
                   save.intermediate.results=FALSE,
                   OLD.GSEA=FALSE,
-                  use.fast.enrichment.routine=TRUE)
+                  use.fast.enrichment.routine=TRUE,
+                  ...)
   results <- rbind(results$report1, results$report2)
   rownames(results) <- results$GS
   colnames(results)[which(colnames(results) == "NOM p-val")] <- "p.value"

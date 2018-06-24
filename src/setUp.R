@@ -54,3 +54,8 @@ if(!require("GSEABase")){
 	biocLite("GSEABase")
 	load("GSEABase")
 }
+
+if(!require("SetRank")){
+	biocLite("SetRank")
+	load("SetRank")
+}

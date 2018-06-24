@@ -1,44 +1,20 @@
 # This module contains utilities required for data preparation.
-prep.annotation.pkg.name <- function(gene.annotation){
-  # Append gene ".db" to the annotation package name, if required.
-  #
-  # Args:
-  #   gene.annotation: annotation package name with or without .db extension.
-  #
-  # Returns:
-  #   An string representing annotation package name with .db extension
-  
-  if(gene.annotation %in% c(NULL, NA, ""))
-     stop("Annotation name is absent!")
-  if(!endsWith(gene.annotation, ".db"))
-      gene.annotation <- paste(gene.annotation, ".db", sep = "")
-  return(gene.annotation)
-}
-
-
-prep.genesets <- function(geneset.collection, annotation, background, min.size=1, max.size=Inf){
-  # This method converts gene ids to match annotation.
-  # It also filters gene sets based on their sizes.
+prep.genesets <- function(geneset.collection, background, min.size=1, max.size=Inf){
+  # This method discard genes within gene sets that are not present
+  #   in the background set. It also filters gene sets based on their sizes.
   #
   # Args:
   #   geneset.collection: a GSEABase::GeneSetCollection object
-  #   annotation: a string representing annotation name
   #   background: the vector like object representing the id of all genes under study.
   #   min.size: All gene sets with a size smaller than this number will be filtered.
   #   max.size: All gene sets with a size larger than this number will be filtered.
   #
   # Returns:
-  #   genesets with gene ids according to annotation and
-  #     sizes between min.size and max.size (both inclusive).
+  #   A list of gene sets. Genes that are not present in the background are excluded Also gene sets with sizes less than
+  #     min.size or bigger than max.size are excluded
   # Load required packages
   require("GSEABase") || stop("Package GSEABase is not available!")
-  pkg.name <- prep.annotation.pkg.name(annotation)
-  require(pkg.name, character.only=TRUE) || stop("Package %s is not available!",
-                                                  pkg.name)
 
-  # Map identifies in geneset.collection to match gene annotation identifies
-  geneset.collection <- GSEABase::mapIdentifiers(geneset.collection,
-                                                 GSEABase::AnnotationIdentifier(annotation))
   # Extract gene ids from each gene set in geneset.collection
   genesets <- lapply(geneset.collection, GSEABase::geneIds)
   names(genesets) <- names(geneset.collection)
@@ -74,7 +50,8 @@ prep.loadGMT <- function(collection.address){
 }
 
 
-prep.loadExpressionSet <- function(address, contrast, annotation, sep="\t"){
+prep.loadExpressionSet <- function(address, contrast,
+                                   annotation="", sep="\t"){
   # Load an ExpressionSet containing gene expression measures.
   # 
   # Args:

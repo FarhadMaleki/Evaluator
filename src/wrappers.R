@@ -272,7 +272,7 @@ run.ORAWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   ora.results$p.adj <- p.adjust(ora.results$p.value,
                                 method=multitest.adjustment)
   if(sort.result)
-    ora.results[order(ora.results$p.adj), ]
+    ora.results <- ora.results[order(ora.results$p.adj), ]
   return(ora.results)
 }
 ###############################################################################

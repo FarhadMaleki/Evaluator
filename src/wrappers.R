@@ -40,7 +40,6 @@ gsva.caller <- function(expression.set, genesets, contrast,
                          method=method.name,
                          parallel.sz=1, 
                          verbose=FALSE,
-                         kcdf="Gaussian",
                          ...)
   group <- factor(contrast)
   design.matrix <- model.matrix(~ group)

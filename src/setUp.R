@@ -56,6 +56,8 @@ if(!require("GSEABase")){
 }
 
 if(!require("SetRank")){
-	biocLite("SetRank")
+    # Install a dependency
+	install.packages("igraph")
+    biocLite("SetRank")
 	load("SetRank")
 }

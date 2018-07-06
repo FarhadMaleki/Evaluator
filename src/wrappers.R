@@ -811,3 +811,32 @@ run.SAFEWrapper <- function(obj, multitest.adjustment="BH", sort.result=TRUE,
   return(safe.results)
 }
 ###############################################################################
+##                                 get.top.table                             ##
+###############################################################################
+get.top.table <- function(expression.set, contrast, ...){
+  # Get the topTable of an expression set of a case-control study determined
+  #   by a contrast vector.
+  # Args:
+  #   expression.set: An ExpressionSet object (see GSEABase package).
+  #   contrast: A vector like representing case and control samples. Control 
+  #     samples should be represented by "c" and case sample should be
+  #     represented by "d".
+  #   ...: See the arguments of topTable from limma package. 
+  #     The coef parameter should be equal to "Diff".
+  # Returns:
+  #   A data.frame containing the results of topTable from limma package.   
+  #   
+  require("limma") || stop("Package limma is not available!")
+  # Run single gene analysis using limma
+  group <- factor(contrast)
+  design.matrix <- model.matrix(~0 + group)
+  colnames(design.matrix) <- levels(group)
+  contrast <- makeContrasts(Diff=d - c, levels=design.matrix)
+  fit <- lmFit(exprs(expression.set), design.matrix)
+  fit <- contrasts.fit(fit, contrast)
+  fit <- eBayes(fit)  
+  # Get the genes with p-value less than 0.1 in ascending order
+  # of p-value
+  top.table <- topTable(fit, ...)
+  return(top.table)
+}

@@ -840,3 +840,86 @@ get.top.table <- function(expression.set, contrast, ...){
   top.table <- topTable(fit, ...)
   return(top.table)
 }
+###############################################################################
+##                                SetRankWrapper                             ##
+###############################################################################
+SetRankWrapper <- function(expression.set, genesets, contrast){
+  # Constructor for SetRankWrapper
+  #
+  # Args:
+  #   expression.set: An ExpressionSet object (see GSEABase package).
+  #   genesets: A list of gene sets.
+  #   contrast: A vector like representing case and control samples. Control
+  #     samples should be represented by "c" and case sample should be
+  #     represented by "d".
+  # Return:
+  #   A SetRankWrapper object that is a list of expression.set, genesets, and
+  #     contrast
+  obj <- assemble.obj(expression.set, genesets, contrast)
+  class(obj) <- "SetRankWrapper"
+  return(obj)
+}
+###############################################################################
+# define run method for SetRankWrapper
+run.SetRankWrapper <- function(obj, multitest.adjustment="BH",
+                               sort.result=TRUE,
+                               gene.p.adjust.cuttoff=0.1, ...){
+  # Run method for SetRankWrapper objects
+  #
+  # Args:
+  #   obj: a SetRankWrapper object created by SetRankWrapper.
+  #   multitest.adjustment: Adjustment for multiple comparisons (see p.adjust).
+  #   sort.result: Logical, True to sort the result based on adjusted p-values.
+  #   ...: see the documentation for setRankAnalysis from SetRank package.
+  # Returns:
+  #   A data.frame representing the result of gene set analysis.
+
+  require("GSEABase") || stop("Package GSEABase is not available!")
+  require("igraph") || stop("Package igraph is not available!")
+  require("SetRank") || stop("Package SetRank is not available!")
+  # Create a vector of gene set names, where each gene set name repeats
+  # for n times, where n is the number of its members
+  geneset.names <- names(obj$genesets)
+  gene.names <- c()
+  term.ids <- c()
+  for(i in 1:length(obj$genesets)){
+    term.ids <- c(term.ids, rep(geneset.names[i], length(obj$genesets[[i]])))
+    gene.names <- c(gene.names, obj$genesets[[i]])
+  }
+  # Build the annotation table
+  annotation.table <- data.frame(termID=term.ids,
+                                 geneID=gene.names,
+                                 termName=term.ids,
+                                 dbName="-",
+                                 description="-")
+  annotation.table <- unique(annotation.table)
+  max.geneset.size <- max(sapply(obj$genesets, length))
+  background <- row.names(exprs(obj$expression.set))
+  collection <- buildSetCollection(annotation.table, referenceSet=background,
+                                  maxSetSize=max.geneset.size)
+  # Get all genes with an adjusted p-value less than 0.1
+  top.table <-  get.top.table(obj$expression.set, obj$contrast, number=Inf,
+                              adjust.method="BH",
+                              p.value=gene.p.adjust.cuttoff, coef="Diff",
+                              sort.by="P")
+  print(length(top.table))
+  if(length(top.table) == 0){
+    return(data.frame("p.value"=numeric(0), "p.adj"=numeric(0)))
+  }
+  genes <- rownames(top.table)
+  # Run SetRank
+  network <- setRankAnalysis(genes, collection, ...)
+  # Convert the results to a data frame
+  setrank.results <- as_data_frame(network, what = "vertices")
+  # Change pValue column name to p.value
+  idx <- which(colnames(setrank.results) == "pValue")
+  colnames(setrank.results)[idx] <- "p.value"
+  # Delete adjusted p-values column calculated by hochberg method in p.adjust
+  setrank.results$adjustedPValue <- NULL
+  # Calculate adjusted p-values
+  setrank.results$p.adj <- p.adjust(setrank.results$p.value,
+                                    method=multitest.adjustment)
+  if(sort.result)
+    setrank.results <- setrank.results[order(setrank.results$p.adj), ]
+  return(setrank.results)
+}

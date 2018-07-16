@@ -96,5 +96,47 @@ get.overlap <- function(p.adj, alpha=0.05){
     }
   }
   return(overlap)
-
+}
+###############################################################################
+draw.heatmap <- function(p.adj, alpha=0.05){
+  # Plots a heatmap of the overlap between results of different gene set
+  #   analysis experiments.
+  # Args:
+  #   p.adj: A data frame of adjusted p.values for gene sets under study. Each
+  #     row represents a gene set, and each column represents adjusted p.values
+  #     resulted from an experiment.
+  #   alpha: A number between 0 and 1, representing significance level.
+  # Returns:
+  #   A ggplot object that can be manipulated using ggplot components.
+  require("ggplot2") || stop("Package ggplot2 is not available!")
+  require("reshape2") || stop("Package reshape2 is not available!")
+  overlap <- get.overlap(p.adj, alpha)
+  number.of.experiments <- dim(p.adj)[2]
+  for( i in 1:number.of.experiments){
+    j <- 1
+    while( j < i){
+      overlap[i, j] <- NA
+      j <- j + 1
+    }
+  }
+  overlap.melted <- melt(overlap, value.name="Overlap")
+  plt <- ggplot(data=overlap.melted,
+                mapping = aes(x=Var1, y=Var2, fill=Overlap)) +
+            geom_tile() +
+            theme(panel.background = element_blank(),
+                  plot.background = element_blank(),
+                  axis.text=element_text(color="gray", angle=0),
+                  axis.text.x=element_text(angle=90),
+                  axis.title = element_text(color="gray"),
+                  axis.ticks=element_blank())+
+            coord_equal() +
+            scale_x_discrete(limit=c(1:30), expand=c(0,0), position="top") +
+            scale_y_discrete(limit=c(1:30), expand=c(0,0)) +
+            scale_fill_gradient2(low="blue", mid="white", high="red", midpoint=0.5,
+                                 space="Lab", na.value="white",
+                                 limits=c(0,1), breaks=c(0, 0.25, 0.50, 0.75, 1)) +
+            guides(fill=guide_colorbar(barwidth=1, barheight=10)) +
+            xlab("Sample set") +
+            ylab("Sample set")
+  return(plt)
 }

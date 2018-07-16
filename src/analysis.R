@@ -140,3 +140,52 @@ draw.heatmap <- function(p.adj, alpha=0.05){
             ylab("Sample set")
   return(plt)
 }
+###############################################################################
+draw.boxplot <- function(p.adj.list, experiment.tags, alpha=0.05){
+  # Draw a box plot for overlap between the results of different groups of gene
+  #   set analysis experiments. The result of each group should be represented
+  #   using a data frame.
+  # Args:
+  #   p.adj.list: A list of data frames. Each data frame represents adjusted
+  #     p.values for gene sets under study. In each data frame, a row
+  #     represents a gene set, and a column represents adjusted p.values
+  #     resulted from an experiment.
+  #   Returns:
+  #     A ggplot object that can be manipulated using ggplot components.
+  require("ggplot2") || stop("Package ggplot2 is not available!")
+  k <-  1
+  values <- c()
+  factors <- c()
+  for(p.adj in p.adj.list){
+    number.of.experiments <- dim(p.adj)[2]
+    mask <- matrix(rep(FALSE, number.of.experiments^2),
+                   ncol=number.of.experiments)
+    for(i in 1:number.of.experiments){
+      j <- i+1
+      while(j <= number.of.experiments){
+        mask[i, j] <- TRUE
+        j <- j+1
+      }
+    }
+    overlap <- get.overlap(p.adj, alpha)
+    flattened.overlap <- overlap[mask]
+    number.of.NAs <- sum(is.na(flattened.overlap))
+    stopifnot(number.of.NAs == 0)
+    values <- c(values, flattened.overlap)
+    factors <- c(factors, rep(experiment.tags[k], length(flattened.overlap)))
+    k <- k + 1
+  }
+  factors <- as.factor(factors)
+  # Draw box plot
+  plt <- ggplot() +
+          geom_boxplot(mapping=aes(x=factors, y=values, fill=factors),
+                       show.legend=FALSE) +
+          scale_y_continuous(limits = c(0,1),
+                             breaks = c(0, 0.25, 0.5, 0.75, 1), ) +
+          scale_fill_brewer(palette = "YlOrRd") +
+          theme(panel.background=element_blank(),
+                axis.line = element_line(color="gray")) +
+          ylab("Overlap") +
+          xlab("Sample size per group")
+  return(plt)
+}

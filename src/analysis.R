@@ -150,7 +150,11 @@ draw.boxplot <- function(p.adj.list, experiment.tags, alpha=0.05){
   #     p.values for gene sets under study. In each data frame, a row
   #     represents a gene set, and a column represents adjusted p.values
   #     resulted from an experiment.
-  #   Returns:
+  #   experiment.tags: A vector of tags (of type string or integer) used for 
+  #     associating each box to an experiment. length(experiment.tags) must be
+  #     to  length(p.adj.list).
+  #   alpha: A number between 0 and 1, representing significance level.
+  # Returns:
   #     A ggplot object that can be manipulated using ggplot components.
   require("ggplot2") || stop("Package ggplot2 is not available!")
   k <-  1

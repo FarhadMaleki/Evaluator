@@ -59,3 +59,42 @@ analyze.RepeatedExperiment <- function(obj,
                   "kendall.result"=kendall.result)
   return(results)
 }
+###############################################################################
+get.overlap <- function(p.adj, alpha=0.05){
+  # Given the adjusted p-values for a number of experiments, this function
+  #   calculates the overlap between the result of different experiments.
+  # Args:
+  #   p.adj: A data frame of adjusted p.values for gene sets under study. Each
+  #     row represents a gene set, and each column represents adjusted p.values
+  #     resulted from an experiment.
+  #   alpha: A number between 0 and 1, representing significance level.
+  # Returns:
+  #   A matrix of overlap values, where overlap[i, j] represents the overlap
+  #     between results of two experiments is calculated as intersection of
+  #     their differentially enriched gene sets over the union of their
+  #     differentially enriched gene sets. 
+  number.of.experiments <- dim(p.adj)[2]
+  significants <- p.adj < alpha
+  significants[is.na(significants)] <- FALSE
+  overlap <- matrix(rep(NA, number.of.experiments^2),
+                        ncol=number.of.experiments)
+  for(i in 1:number.of.experiments){
+    overlap[i, i] <- 1
+    j <- 1
+    A <- significants[, i]
+    while(j < i){
+      B <- significants[, j]
+      union.size <- sum(A|B)
+      if(sum(A|B) == 0){
+        overlap[i, j] <- 0  
+      }else{
+        intersection.size <- sum(A & B)
+        overlap[i, j] <- intersection.size / union.size
+        overlap[j, i] <- overlap[i, j]
+      }
+      j <- j + 1
+    }
+  }
+  return(overlap)
+
+}

@@ -41,6 +41,16 @@ analyze.RepeatedExperiment <- function(obj,
   #     package.
   #   alpha: A real number between 0 and 1, which is representative of the 
   #     significance level.
+  # Returns:
+  #   A list containing the following results for a replicated experiment:
+  #     - Result of Nemenyi multiple comparison test with q approximation
+  #         for unreplicated blocked data
+  #     - P-value resulted from Friedman rank sum test
+  #     - Result of kendall concordance coefficient test
+  #   
+  require("vegan") || stop("Package vegan is not available!")
+  require("PMCMR") || stop("Package PMCMR is not available!")
+  require("GMD") || stop("Package GMD is not available!")
   p.adj <- obj$p.adj
   p.adj[is.na(p.adj)] <- 1
   significants <- p.adj < alpha
@@ -49,11 +59,8 @@ analyze.RepeatedExperiment <- function(obj,
   filtered.genesets <- rowSums(significants) > expected.false.positives 
   p.adj <- p.adj[filtered.genesets, ]
   p.adj <- as.matrix(p.adj)
-  require("vegan") || stop("Package vegan is not available!")
-  require("PMCMR") || stop("Package PMCMR is not available!")
-  require("GMD") || stop("Package GMD is not available!")
-  friedman.result <- friedman.test(as.matrix(p.adj))$p.value
-  kendall.result <- kendall.global(p.adj, nperm = n.permutations,
+  friedman.result <- friedman.test(as.matrix(p.adj))
+  kendall.result <- kendall.global(p.adj, nperm=n.permutations,
                                    mult=adjustment.method)
   friedman.posthoc <- posthoc.friedman.nemenyi.test(as.matrix(p.adj))
   results <- list("friedman.result"=friedman.result,
@@ -195,3 +202,4 @@ draw.boxplot <- function(p.adj.list, experiment.tags, alpha=0.05){
           xlab("Sample size per group")
   return(plt)
 }
+

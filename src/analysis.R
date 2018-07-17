@@ -41,12 +41,14 @@ analyze.RepeatedExperiment <- function(obj,
   #     package.
   #   alpha: A real number between 0 and 1, which is representative of the 
   #     significance level.
-  significants <- obj$p.adj < alpha
-  number.of.genesets <- dim(obj$p.adj)[1]
-  expected.false.positives <- number.of.genesets * alpha
+  p.adj <- obj$p.adj
+  p.adj[is.na(p.adj)] <- 1
+  significants <- p.adj < alpha
+  number.of.experiments <- dim(p.adj)[2]
+  expected.false.positives <- number.of.experiments * alpha
   filtered.genesets <- rowSums(significants) > expected.false.positives 
-  p.adj <- obj$p.adj[filtered.genesets]
-  p.adj <- as.matrix(obj$p.adj)
+  p.adj <- p.adj[filtered.genesets, ]
+  p.adj <- as.matrix(p.adj)
   require("vegan") || stop("Package vegan is not available!")
   require("PMCMR") || stop("Package PMCMR is not available!")
   require("GMD") || stop("Package GMD is not available!")

@@ -94,13 +94,13 @@ get.overlap <- function(p.adj, alpha=0.05){
     while(j < i){
       B <- significants[, j]
       union.size <- sum(A|B)
-      if(sum(A|B) == 0){
+      if(union.size == 0){
         overlap[i, j] <- 0  
       }else{
         intersection.size <- sum(A & B)
         overlap[i, j] <- intersection.size / union.size
-        overlap[j, i] <- overlap[i, j]
       }
+      overlap[j, i] <- overlap[i, j]
       j <- j + 1
     }
   }

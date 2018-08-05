@@ -191,11 +191,10 @@ draw.boxplot <- function(p.adj.list, experiment.tags, alpha=0.05){
   factors <- as.factor(factors)
   # Draw box plot
   plt <- ggplot() +
-          geom_boxplot(mapping=aes(x=factors, y=values, fill=factors),
+          geom_boxplot(mapping=aes(x=factors, y=values),
                        show.legend=FALSE) +
           scale_y_continuous(limits = c(0,1),
                              breaks = c(0, 0.25, 0.5, 0.75, 1), ) +
-          scale_fill_brewer(palette = "YlOrRd") +
           theme(panel.background=element_blank(),
                 axis.line = element_line(color="gray")) +
           ylab("Overlap") +

@@ -87,6 +87,8 @@ get.overlap <- function(p.adj, alpha=0.05){
   significants[is.na(significants)] <- FALSE
   overlap <- matrix(rep(NA, number.of.experiments^2),
                         ncol=number.of.experiments)
+  rownames(overlap) <- colnames(p.adj)
+  colnames(overlap) <- colnames(p.adj)
   for(i in 1:number.of.experiments){
     overlap[i, i] <- 1
     j <- 1

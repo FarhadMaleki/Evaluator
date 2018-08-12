@@ -141,8 +141,8 @@ draw.heatmap <- function(p.adj, alpha=0.05){
                   axis.title = element_text(color="gray"),
                   axis.ticks=element_blank())+
             coord_equal() +
-            scale_x_discrete(limit=c(1:30), expand=c(0,0), position="top") +
-            scale_y_discrete(limit=c(1:30), expand=c(0,0)) +
+            scale_x_discrete(limit=c(1:number.of.experiments), expand=c(0,0), position="top") +
+            scale_y_discrete(limit=c(1:number.of.experiments), expand=c(0,0)) +
             scale_fill_gradient2(low="blue", mid="white", high="red", midpoint=0.5,
                                  space="Lab", na.value="white",
                                  limits=c(0,1), breaks=c(0, 0.25, 0.50, 0.75, 1)) +

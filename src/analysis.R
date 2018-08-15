@@ -50,22 +50,40 @@ analyze.RepeatedExperiment <- function(obj,
   #   
   require("vegan") || stop("Package vegan is not available!")
   require("PMCMR") || stop("Package PMCMR is not available!")
-  require("GMD") || stop("Package GMD is not available!")
+  require("RVAideMemoire") || stop("Package RVAideMemoire is not available!")
   p.adj <- obj$p.adj
   p.adj[is.na(p.adj)] <- 1
   significants <- p.adj < alpha
   number.of.experiments <- dim(p.adj)[2]
+  number.of.genesets <- dim(p.adj)[1]
   expected.false.positives <- number.of.experiments * alpha
-  filtered.genesets <- rowSums(significants) > expected.false.positives 
+  filtered.genesets <- rowSums(significants) > expected.false.positives
   p.adj <- p.adj[filtered.genesets, ]
   p.adj <- as.matrix(p.adj)
   friedman.result <- friedman.test(as.matrix(p.adj))
   kendall.result <- kendall.global(p.adj, nperm=n.permutations,
                                    mult=adjustment.method)
   friedman.posthoc <- posthoc.friedman.nemenyi.test(as.matrix(p.adj))
+  # Conduct Cochran test
+  response <- obj$p.adj
+  response[is.na(response)] <- 1
+  flags <- (response < (alpha))
+  response[flags] <- 0
+  response[!flags] <- 1
+  r.names <- paste("gs", 1:number.of.genesets, sep="")
+  c.names <- colnames(response)
+  rownames(response) <- r.names
+  measures <- factor(c(as.matrix(response)))
+  row.factors <- factor(rep(r.names, number.of.experiments))
+  col.factors <- factor(rep(c.names, each=number.of.genesets))
+  tbl <- tapply(measures, list(row.factors, col.factors), sum)
+  df <- data.frame(Run=col.factors, measures=measures, Geneset=row.factors)
+  cochran.result <-cochran.qtest(measures ~ Run | Geneset, data = df)
+  # Return the result of all tests
   results <- list("friedman.result"=friedman.result,
                   "friedman.nemenyi.result"=friedman.posthoc,
-                  "kendall.result"=kendall.result)
+                  "kendall.result"=kendall.result,
+                  "cochran.result"=cochran.result)
   return(results)
 }
 ###############################################################################
